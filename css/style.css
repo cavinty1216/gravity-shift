@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Gravity Shift — 스타일
+   색은 CSS 변수(디자인 토큰)로 관리해요. 앱 위젯에서는 자비스 앱의 토큰이
+   자동으로 주입되고, 없을 때는 var() 안의 기본값을 사용해요.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--pickle-surface-page, #0b0e1c);
+  color: var(--pickle-text-primary, #f5f7ff);
+  overflow: hidden;                      /* 당겨서 새로고침·스크롤 방지 */
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+/* 게임 무대: 화면 전체 + 아이폰 노치/홈바 안전 영역만큼 안쪽 여백 */
+#stage {
+  position: fixed;
+  inset: 0;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 8px)
+    calc(env(safe-area-inset-right, 0px) + 8px)
+    calc(env(safe-area-inset-bottom, 0px) + 8px)
+    calc(env(safe-area-inset-left, 0px) + 8px);
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;                    /* 탭해도 스크롤·확대되지 않아요 */
+}
+
+/* ── 안내 화면(시작·게임 오버·일시정지) ─────────────────────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.screen.hidden { display: none; }
+
+.card {
+  width: min(88%, 340px);
+  padding: 22px 24px;
+  border-radius: var(--pickle-radius-card, 20px);
+  background: var(--pickle-surface-card, rgba(255, 255, 255, 0.07));
+  border: 1px solid var(--pickle-border-hairline, rgba(255, 255, 255, 0.14));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 7vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--pickle-text-primary, #f5f7ff);
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 800;
+}
+
+.tag {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pickle-accent, #22d3ee);
+}
+
+.hint {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--pickle-text-secondary, rgba(245, 247, 255, 0.66));
+}
+
+.score-big {
+  margin: 4px 0;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.badge {
+  margin: 4px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pickle-text-primary, #f5f7ff);
+  background: rgba(255, 214, 102, 0.18);
+  border: 1px solid rgba(255, 214, 102, 0.45);
+  border-radius: var(--pickle-radius-pill, 999px);
+  padding: 4px 12px;
+  display: inline-block;
+}
+
+.badge.hidden { display: none; }
+
+.btn {
+  margin-top: 12px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  padding: 13px 30px;
+  border: 0;
+  border-radius: var(--pickle-radius-cta, 16px);
+  background: var(--pickle-accent, #22d3ee);
+  color: #06222b;
+  cursor: pointer;
+  transition: transform 0.06s ease;
+}
+
+.btn:active { transform: scale(0.95); }
