@@ -98,7 +98,10 @@ CRC를 스스로 다시 검사해서, 문제가 있으면 알려줘요.
 Game Off 2026은 **게임 코드가 공개된 GitHub 저장소**와 **itch.io 페이지
 제출**이 필요해요.
 
-- [ ] GitHub 저장소 만들기 / 코드 올리기 (공개 저장소)
+- [x] GitHub 저장소 만들기 / 코드 올리기 (공개 저장소)
+  → <https://github.com/cavinty1216/gravity-shift>
+  → 브라우저에서 바로 플레이:
+    <https://cavinty1216.github.io/gravity-shift/> · <https://gravity-shift-psi.vercel.app/>
 - [ ] itch.io 행사 참가 등록 (아직 안 함)
 - [ ] itch.io에 게임 업로드 (아직 안 함)
 
