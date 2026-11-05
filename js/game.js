@@ -112,24 +112,92 @@
   }
 
   // ───────────────────────── 소리 (WebAudio, 파일 없음) ─────────────────────────
+  // 저작권 걱정 없는 자체 생성 효과음이에요. 오디오 파일 대신 브라우저가
+  // 직접 파형을 만들어요. iPhone 등 모바일 브라우저는 사용자가 화면을 누르기
+  // 전까지 소리를 금지하므로, 첫 입력(pointerdown·키보드)에서 잠금을 풀어요.
   var AC = null;
+  var sfxCount = 0;                       // 재생 시도 횟수 (테스트 확인용)
+  var muted = false;                      // 음소거 상태 (localStorage에 저장)
+  try {
+    muted = localStorage.getItem('gravity-shift-muted') === '1';
+  } catch (e) { /* 위젯 안에서는 localStorage를 못 써요 */ }
+
   function ensureAudio() {
     if (!AC) {
       try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
     }
+    // iOS는 제스처 안에서 resume해야 해요 — primary()가 항상 이 함수를 부러요
     if (AC && AC.state === 'suspended') AC.resume();
   }
-  function blip(freq, dur, type, vol) {
-    if (!AC) return;
+
+  // 파형 하나를 예약해서 재생해요. freq는 숫자 또는 [시작, 끝] (높이 미끄러짐)
+  function tone(freq, dur, type, vol, delay) {
+    if (muted || !AC || AC.state !== 'running') return;
     try {
+      var t = AC.currentTime + (delay || 0);
       var o = AC.createOscillator(), g = AC.createGain();
       o.type = type || 'square';
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(vol || 0.04, AC.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
+      if (freq instanceof Array) {
+        o.frequency.setValueAtTime(freq[0], t);
+        o.frequency.exponentialRampToValueAtTime(freq[1], t + dur);
+      } else {
+        o.frequency.value = freq;
+      }
+      g.gain.setValueAtTime(vol || 0.04, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       o.connect(g); g.connect(AC.destination);
-      o.start(); o.stop(AC.currentTime + dur);
+      o.start(t); o.stop(t + dur + 0.02);
+      sfxCount += 1;
     } catch (e) {}
+  }
+
+  // 충돌용 짧은 노이즈 (백색 잡음 + 로우패스)
+  function thud(dur, vol, delay) {
+    if (muted || !AC || AC.state !== 'running') return;
+    try {
+      var t = AC.currentTime + (delay || 0);
+      var n = Math.floor(AC.sampleRate * dur);
+      var buf = AC.createBuffer(1, n, AC.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var src = AC.createBufferSource();
+      src.buffer = buf;
+      var lp = AC.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 900;
+      var g = AC.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(lp); lp.connect(g); g.connect(AC.destination);
+      src.start(t);
+      sfxCount += 1;
+    } catch (e) {}
+  }
+
+  // 중력 반전: 위로 뒤집으면 철컥 올라가고, 아래로는 내려가는 짧은 스윕
+  function sfxFlip(dirUp) {
+    var f = dirUp ? [320, 640] : [560, 300];
+    tone(f, 0.09, 'square', 0.04);
+    tone(dirUp ? 960 : 640, 0.06, 'sine', 0.02, 0.01);
+  }
+
+  // 별 획득: 반짝- 하고 올라가는 두 음 (딩-딩↑)
+  function sfxStar() {
+    tone(880, 0.09, 'sine', 0.05);
+    tone(1318.5, 0.13, 'sine', 0.045, 0.07);
+    tone(1760, 0.09, 'triangle', 0.018, 0.07);
+  }
+
+  // 시작: 짧고 경쾌한 두 번
+  function sfxStart() {
+    tone(440, 0.07, 'square', 0.04);
+    tone(660, 0.1, 'square', 0.04, 0.08);
+  }
+
+  // 충돌·게임 오버: 낮게 떨어지는 소리 + 둔탁한 노이즈
+  function sfxOver() {
+    tone([180, 55], 0.32, 'sawtooth', 0.06);
+    thud(0.22, 0.09);
   }
 
   // ───────────────────────── 크기 조절 ─────────────────────────
@@ -179,7 +247,7 @@
     nextGap = H * CFG.gapMax * 1.3;   // 첫 장애물 전까지는 여유를 줘요
     shake = 0; flash = 0;
     showScreen(null);
-    blip(560, 0.08, 'square', 0.05);
+    sfxStart();
   }
 
   function pauseGame() {
@@ -216,8 +284,7 @@
         ? '새 최고 기록! ' + s + '점으로 게임 오버였어요.'
         : s + '점으로 게임 오버, 최고 기록은 ' + store.best + '점이에요.');
     }
-    blip(120, 0.3, 'sawtooth', 0.07);
-    blip(60, 0.4, 'triangle', 0.05);
+    sfxOver();
   }
 
   function flip() {
@@ -232,7 +299,7 @@
         color: COLORS.player
       });
     }
-    blip(300 + Math.random() * 60, 0.07, 'square', 0.045);
+    sfxFlip(player.dir < 0);   // flip()은 dir을 먼저 뒤집으니 -1이면 위로 올라간 상태
   }
 
   // ───────────────────────── 스폰 ─────────────────────────
@@ -347,7 +414,7 @@
           });
         }
         stars.splice(j, 1);
-        blip(880, 0.12, 'sine', 0.05);
+        sfxStar();
       }
     }
 
@@ -426,7 +493,7 @@
       ctx.textAlign = 'right';
       ctx.font = '600 ' + Math.round(Math.max(11, H * 0.022)) + 'px ' + fontStack;
       ctx.globalAlpha = 0.6;
-      ctx.fillText('최고 ' + store.best, W - 12, Math.max(24, H * 0.045));
+      ctx.fillText('최고 ' + store.best, W - 70, Math.max(24, H * 0.045));   // 음소거 버튼 왼쪽으로 피해요
       ctx.globalAlpha = 1;
     }
 
@@ -590,6 +657,44 @@
     if (b) b.addEventListener('click', function (e) { if (e.detail === 0) primary(); });
   });
 
+  // ───────────────────────── 음소거 버튼 (오른쪽 위) ─────────────────────────
+  var btnSound = document.getElementById('btn-sound');
+  function applyMuteUI() {
+    if (!btnSound) return;
+    btnSound.textContent = muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';   // 🔇 / 🔊
+    btnSound.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+    btnSound.setAttribute('aria-pressed', muted ? 'true' : 'false');
+  }
+  function toggleMute() {
+    muted = !muted;
+    try { localStorage.setItem('gravity-shift-muted', muted ? '1' : '0'); } catch (e) {}
+    applyMuteUI();
+    if (!muted) { ensureAudio(); tone(660, 0.08, 'sine', 0.04); }   // 켰을 때 확인음
+  }
+  if (btnSound) {
+    // stage의 pointerdown(게임 입력)으로 번지지 않게 여기서 멈춰요
+    btnSound.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleMute();
+    });
+    btnSound.addEventListener('click', function (e) {
+      if (e.detail === 0) toggleMute();   // 키보드 접근성
+    });
+  }
+  applyMuteUI();
+
+  // 키보드 M키로도 음소거 전환
+  window.addEventListener('keydown', function (e) {
+    if (e.repeat) return;
+    if (e.code === 'KeyM') { e.preventDefault(); toggleMute(); }
+  });
+
+  // 화면에서 돌아오면 오디오 잠금이 다시 걸렸을 수 있어요 — 다음 입력에서 풀어요
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && AC && AC.state === 'suspended') AC.resume();
+  });
+
   // 화면을 벗어나면 자동 일시정지
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) pauseGame();
@@ -638,6 +743,9 @@
     get score() { return Math.floor(score); },
     get best()  { return store.best; },
     get dir()   { return player.dir; },
+    audio: function () {
+      return { muted: muted, acState: AC ? AC.state : 'none', sfxCount: sfxCount };
+    },
     primary: primary,
     start: startGame
   };

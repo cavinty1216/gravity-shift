@@ -41,6 +41,29 @@ body {
   touch-action: none;                    /* 탭해도 스크롤·확대되지 않아요 */
 }
 
+/* ── 음소거 버튼 (오른쪽 위, 화면 위에 떠 있어요) ─────────────────── */
+#btn-sound {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  z-index: 3;
+  width: 44px;                           /* 손가락 누르기 쉬운 최소 크기 */
+  height: 44px;
+  font-size: 20px;
+  line-height: 1;
+  border: 1px solid var(--pickle-border-hairline, rgba(255, 255, 255, 0.14));
+  border-radius: var(--pickle-radius-pill, 999px);
+  background: var(--pickle-surface-card, rgba(255, 255, 255, 0.07));
+  color: var(--pickle-text-primary, #f5f7ff);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+#btn-sound:active { transform: scale(0.92); }
+
 /* ── 안내 화면(시작·게임 오버·일시정지) ─────────────────────────── */
 .screen {
   position: absolute;
