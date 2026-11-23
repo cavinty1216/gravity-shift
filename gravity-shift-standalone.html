@@ -73,6 +73,46 @@ body {
 
 #btn-sound:active { transform: scale(0.92); }
 
+/* ── 언어 전환 버튼 (왼쪽 위) ─────────────────────────────────── */
+#btn-lang {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  left: calc(env(safe-area-inset-left, 0px) + 14px);
+  z-index: 3;
+  min-width: 44px;                       /* 손가락 누르기 쉬운 최소 크기 */
+  height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--pickle-border-hairline, rgba(255, 255, 255, 0.14));
+  border-radius: var(--pickle-radius-pill, 999px);
+  background: var(--pickle-surface-card, rgba(255, 255, 255, 0.07));
+  color: var(--pickle-text-primary, #f5f7ff);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.18s ease, transform 0.06s ease;
+}
+
+#btn-lang:active { transform: scale(0.92); }
+
+/* 게임 중에는 화면을 가리지 않게 숨겨요 (탭이 언어 전환으로 새는 것도 방지) */
+#btn-lang.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 키보드로 이동했을 때 보이는 초점 테두리 (접근성) */
+#btn-lang:focus-visible,
+#btn-sound:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--pickle-accent, #22d3ee);
+  outline-offset: 2px;
+}
+
 /* ── 안내 화면(시작·게임 오버·일시정지) ─────────────────────────── */
 .screen {
   position: absolute;
@@ -166,16 +206,18 @@ h2 {
 <body>
 <main id="stage">
   <canvas id="game" aria-label="게임 화면"></canvas>
+  <!-- 언어 전환 (왼쪽 위) — 한국어 ↔ English -->
+  <button id="btn-lang" type="button" aria-label="영어로 바꾸기 (Switch to English)">🌐 EN</button>
   <button id="btn-sound" type="button" aria-label="소리 끄기" aria-pressed="false">🔊</button>
 
   <!-- 시작 화면 -->
   <section id="screen-title" class="screen">
     <div class="card">
       <h1>GRAVITY&nbsp;SHIFT</h1>
-      <p class="tag">탭할 때마다 중력이 뒤집혀요</p>
-      <p class="hint">바닥과 천장을 오가며 장애물을 피하세요.<br>
+      <p class="tag" data-i18n="tag">탭할 때마다 중력이 뒤집혀요</p>
+      <p class="hint" data-i18n="hint" data-i18n-html>바닥과 천장을 오가며 장애물을 피하세요.<br>
         📱 화면 탭&ensp;·&ensp;⌨️ 스페이스 / Shift&ensp;·&ensp;🔇 소리는 M키나 오른쪽 위 버튼</p>
-      <button class="btn" id="btn-start" type="button">게임 시작</button>
+      <button class="btn" id="btn-start" type="button" data-i18n="start">게임 시작</button>
       <p class="hint" id="title-best">최고 기록 0점</p>
     </div>
   </section>
@@ -183,20 +225,20 @@ h2 {
   <!-- 게임 오버 화면 -->
   <section id="screen-over" class="screen hidden">
     <div class="card">
-      <h2>게임 오버</h2>
+      <h2 data-i18n="over">게임 오버</h2>
       <p class="score-big" id="over-score">이번 점수 0점</p>
-      <p class="badge hidden" id="over-new">🎉 새 최고 기록!</p>
+      <p class="badge hidden" id="over-new" data-i18n="newBest">🎉 새 최고 기록!</p>
       <p class="hint" id="over-best">최고 기록 0점</p>
-      <button class="btn" id="btn-restart" type="button">다시 하기</button>
+      <button class="btn" id="btn-restart" type="button" data-i18n="again">다시 하기</button>
     </div>
   </section>
 
   <!-- 일시정지 화면 -->
   <section id="screen-pause" class="screen hidden">
     <div class="card">
-      <h2>일시정지</h2>
-      <p class="hint">화면을 탭하면 계속돼요</p>
-      <button class="btn" id="btn-resume" type="button">계속하기</button>
+      <h2 data-i18n="paused">일시정지</h2>
+      <p class="hint" data-i18n="tapGo">화면을 탭하면 계속돼요</p>
+      <button class="btn" id="btn-resume" type="button" data-i18n="resume">계속하기</button>
     </div>
   </section>
 </main>
@@ -246,6 +288,89 @@ h2 {
     text: '#f5f7ff'
   };
 
+  // ───────────────────────── 언어 (한국어 / English) ─────────────────────────
+  // 화면에 나오는 모든 글자는 여기에 모여 있어요. {n}·{b} 같은 자리에 숫자가
+  // 들어갑니다. 언어를 더 넣고 싶으면 같은 모양으로 한 덩어리만 추가하면 돼요.
+  var I18N = {
+    ko: {
+      docTitle:  'Gravity Shift — 중력 반전 러너',
+      canvas:    '게임 화면',
+      tag:       '탭할 때마다 중력이 뒤집혀요',
+      hint:      '바닥과 천장을 오가며 장애물을 피하세요.<br>📱 화면 탭&ensp;·&ensp;⌨️ 스페이스 / Shift&ensp;·&ensp;🔇 소리는 M키나 오른쪽 위 버튼',
+      start:     '게임 시작',
+      best:      '최고 기록 {n}점',
+      bestShort: '최고 {n}',
+      over:      '게임 오버',
+      score:     '이번 점수 {n}점',
+      newBest:   '🎉 새 최고 기록!',
+      again:     '다시 하기',
+      paused:    '일시정지',
+      tapGo:     '화면을 탭하면 계속돼요',
+      resume:    '계속하기',
+      mute:      '소리 끄기',
+      unmute:    '소리 켜기',
+      langBtn:   '🌐 EN',
+      langAria:  '영어로 바꾸기 (Switch to English)',
+      signalNew: '새 최고 기록! {n}점으로 게임 오버였어요.',
+      signal:    '{n}점으로 게임 오버, 최고 기록은 {b}점이에요.',
+      cmdRestart:    '새 판을 시작했어요.',
+      cmdNotPlaying: '게임이 진행 중이 아니에요. 먼저 restart로 판을 시작해 주세요.',
+      cmdUnknown:    '알 수 없는 명령이에요: '
+    },
+    en: {
+      docTitle:  'Gravity Shift — a one-tap gravity flipper',
+      canvas:    'Game screen',
+      tag:       'Every tap flips gravity',
+      hint:      'Flip between the floor and the ceiling and dodge the obstacles.<br>📱 Tap the screen&ensp;·&ensp;⌨️ Space / Shift&ensp;·&ensp;🔇 Sound: M key or the top-right button',
+      start:     'Start Game',
+      best:      'Best score {n}',
+      bestShort: 'Best {n}',
+      over:      'Game Over',
+      score:     'Score {n}',
+      newBest:   '🎉 New best score!',
+      again:     'Play Again',
+      paused:    'Paused',
+      tapGo:     'Tap the screen to keep playing',
+      resume:    'Resume',
+      mute:      'Mute sound',
+      unmute:    'Unmute sound',
+      langBtn:   '🌐 한국어',
+      langAria:  '한국어로 바꾸기 (Switch to Korean)',
+      signalNew: 'New best score! Game over at {n} points.',
+      signal:    'Game over at {n} points. Best is {b}.',
+      cmdRestart:    'Started a new run.',
+      cmdNotPlaying: 'The game is not running. Start a run with restart first.',
+      cmdUnknown:    'Unknown command: '
+    }
+  };
+
+  // 저장된 선택이 있으면 그걸, 없으면 브라우저 언어를 따라가요
+  // (한국어 브라우저 → 한국어, 그 밖에는 영어). 언제든 버튼 하나로 바뀝니다.
+  function detectLang() {
+    var saved = null;
+    try { saved = localStorage.getItem('gravity-shift-lang'); } catch (e) { /* 위젯 안 */ }
+    if (saved === 'ko' || saved === 'en') return saved;
+    var nav = String(navigator.language || navigator.userLanguage || 'en').toLowerCase();
+    return nav.indexOf('ko') === 0 ? 'ko' : 'en';
+  }
+
+  var lang = detectLang();
+
+  // 키를 현재 언어의 문장으로 바꾸고 {n}·{b} 자리에 값을 채워요
+  function T(key, vars) {
+    var dict = I18N[lang] || I18N.ko;
+    var s = (dict[key] != null ? dict[key] : I18N.ko[key]);
+    if (s == null) return '';
+    if (vars) {
+      for (var k in vars) {
+        if (Object.prototype.hasOwnProperty.call(vars, k)) {
+          s = s.split('{' + k + '}').join(String(vars[k]));
+        }
+      }
+    }
+    return s;
+  }
+
   // ───────────────────── 위젯 연동 (앱에서 실행될 때) ─────────────────────
   var widget = (window.pickle && window.pickle.widget) ? window.pickle.widget : null;
 
@@ -290,6 +415,7 @@ h2 {
     overBest:  document.getElementById('over-best'),
     overNew:   document.getElementById('over-new')
   };
+  var btnLang = document.getElementById('btn-lang');
 
   // ───────────────────────── 실행 상태 ─────────────────────────
   var W = 0, H = 0, DPR = 1, fontStack = 'sans-serif';
@@ -435,11 +561,49 @@ h2 {
     screens.title.classList.toggle('hidden', name !== 'title');
     screens.over.classList.toggle('hidden', name !== 'over');
     screens.pause.classList.toggle('hidden', name !== 'pause');
+    // 게임 중에는 언어 버튼을 숨겨요 (화면을 가리지 않고, 탭이 새지 않게)
+    if (btnLang) btnLang.classList.toggle('is-hidden', name === 'playing');
   }
 
   function refreshTitle() {
-    el.titleBest.textContent = '최고 기록 ' + store.best + '점';
+    el.titleBest.textContent = T('best', { n: store.best });
   }
+
+  // ───────────────────────── 언어 적용 ─────────────────────────
+  function applyLang() {
+    document.documentElement.lang = (lang === 'ko') ? 'ko' : 'en';
+    document.title = T('docTitle');
+    if (canvas) canvas.setAttribute('aria-label', T('canvas'));
+
+    var nodes = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodes.length; i++) {
+      var key = nodes[i].getAttribute('data-i18n');
+      if (!key) continue;
+      if (nodes[i].hasAttribute('data-i18n-html')) nodes[i].innerHTML = T(key);
+      else nodes[i].textContent = T(key);
+    }
+
+    if (btnLang) {
+      btnLang.textContent = T('langBtn');
+      btnLang.setAttribute('aria-label', T('langAria'));
+      btnLang.setAttribute('title', T('langAria'));
+    }
+
+    applyMuteUI();
+    refreshTitle();
+    if (state === 'over') {
+      el.overScore.textContent = T('score', { n: store.last });
+      el.overBest.textContent  = T('best',  { n: store.best });
+    }
+  }
+
+  function setLang(next) {
+    lang = (next === 'en') ? 'en' : 'ko';
+    try { localStorage.setItem('gravity-shift-lang', lang); } catch (e) { /* 위젯 안 */ }
+    applyLang();
+  }
+
+  function toggleLang() { setLang(lang === 'ko' ? 'en' : 'ko'); }
 
   function startGame() {
     state = 'playing';
@@ -476,16 +640,16 @@ h2 {
     if (newBest) store.best = s;
     saveRecord();
 
-    el.overScore.textContent = '이번 점수 ' + s + '점';
-    el.overBest.textContent = '최고 기록 ' + store.best + '점';
+    el.overScore.textContent = T('score', { n: s });
+    el.overBest.textContent = T('best', { n: store.best });
     el.overNew.classList.toggle('hidden', !newBest);
     setTimeout(function () { if (state === 'over') showScreen('over'); }, 450);
 
     if (widget && performance.now() - lastSignalAt > 3000) {
       lastSignalAt = performance.now();
       widget.signal(newBest
-        ? '새 최고 기록! ' + s + '점으로 게임 오버였어요.'
-        : s + '점으로 게임 오버, 최고 기록은 ' + store.best + '점이에요.');
+        ? T('signalNew', { n: s })
+        : T('signal', { n: s, b: store.best }));
     }
     sfxOver();
   }
@@ -696,7 +860,7 @@ h2 {
       ctx.textAlign = 'right';
       ctx.font = '600 ' + Math.round(Math.max(11, H * 0.022)) + 'px ' + fontStack;
       ctx.globalAlpha = 0.6;
-      ctx.fillText('최고 ' + store.best, W - 70, Math.max(24, H * 0.045));   // 음소거 버튼 왼쪽으로 피해요
+      ctx.fillText(T('bestShort', { n: store.best }), W - 70, Math.max(24, H * 0.045));   // 음소거 버튼 왼쪽으로 피해요
       ctx.globalAlpha = 1;
     }
 
@@ -865,7 +1029,7 @@ h2 {
   function applyMuteUI() {
     if (!btnSound) return;
     btnSound.textContent = muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';   // 🔇 / 🔊
-    btnSound.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+    btnSound.setAttribute('aria-label', muted ? T('unmute') : T('mute'));
     btnSound.setAttribute('aria-pressed', muted ? 'true' : 'false');
   }
   function toggleMute() {
@@ -893,6 +1057,19 @@ h2 {
     if (e.code === 'KeyM') { e.preventDefault(); toggleMute(); }
   });
 
+  // ───────────────────────── 언어 전환 버튼 (왼쪽 위) ─────────────────────────
+  if (btnLang) {
+    // stage의 pointerdown(게임 입력)으로 번지지 않게 여기서 멈춰요
+    btnLang.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleLang();
+    });
+    btnLang.addEventListener('click', function (e) {
+      if (e.detail === 0) toggleLang();   // 키보드 접근성 (Tab → Enter)
+    });
+  }
+
   // 화면에서 돌아오면 오디오 잠금이 다시 걸렸을 수 있어요 — 다음 입력에서 풀어요
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden && AC && AC.state === 'suspended') AC.resume();
@@ -907,13 +1084,13 @@ h2 {
   if (widget) {
     widget.oncommand = function (line) {
       var word = line.trim().split(/\s+/)[0];
-      if (word === 'restart') { startGame(); return '새 판을 시작했어요.'; }
+      if (word === 'restart') { startGame(); return T('cmdRestart'); }
       if (word === 'flip') {
-        if (state !== 'playing') throw new Error('게임이 진행 중이 아니에요. 먼저 restart로 판을 시작해 주세요.');
+        if (state !== 'playing') throw new Error(T('cmdNotPlaying'));
         flip();
-        return '중력을 뒤집었어요.';
+        return lang === 'en' ? 'Flipped gravity.' : '중력을 뒤집었어요.';
       }
-      throw new Error('알 수 없는 명령이에요: ' + word);
+      throw new Error(T('cmdUnknown') + word);
     };
     widget.onstate = function (data) {
       if (data && typeof data.best === 'number' && data.best > store.best) {
@@ -936,7 +1113,7 @@ h2 {
   // ───────────────────────── 시작 ─────────────────────────
   window.addEventListener('resize', resize);
   resize();
-  refreshTitle();
+  applyLang();                      // 저장된 언어(또는 브라우저 언어)로 화면 글자를 채워요
   showScreen('title');
   requestAnimationFrame(loop);
 
@@ -946,6 +1123,9 @@ h2 {
     get score() { return Math.floor(score); },
     get best()  { return store.best; },
     get dir()   { return player.dir; },
+    get lang()  { return lang; },
+    setLang: setLang,
+    toggleLang: toggleLang,
     audio: function () {
       return { muted: muted, acState: AC ? AC.state : 'none', sfxCount: sfxCount };
     },

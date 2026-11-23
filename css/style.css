@@ -64,6 +64,46 @@ body {
 
 #btn-sound:active { transform: scale(0.92); }
 
+/* ── 언어 전환 버튼 (왼쪽 위) ─────────────────────────────────── */
+#btn-lang {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  left: calc(env(safe-area-inset-left, 0px) + 14px);
+  z-index: 3;
+  min-width: 44px;                       /* 손가락 누르기 쉬운 최소 크기 */
+  height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--pickle-border-hairline, rgba(255, 255, 255, 0.14));
+  border-radius: var(--pickle-radius-pill, 999px);
+  background: var(--pickle-surface-card, rgba(255, 255, 255, 0.07));
+  color: var(--pickle-text-primary, #f5f7ff);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.18s ease, transform 0.06s ease;
+}
+
+#btn-lang:active { transform: scale(0.92); }
+
+/* 게임 중에는 화면을 가리지 않게 숨겨요 (탭이 언어 전환으로 새는 것도 방지) */
+#btn-lang.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 키보드로 이동했을 때 보이는 초점 테두리 (접근성) */
+#btn-lang:focus-visible,
+#btn-sound:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--pickle-accent, #22d3ee);
+  outline-offset: 2px;
+}
+
 /* ── 안내 화면(시작·게임 오버·일시정지) ─────────────────────────── */
 .screen {
   position: absolute;

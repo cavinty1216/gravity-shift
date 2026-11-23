@@ -13,6 +13,7 @@ GitHub Game Off 2026 ([itch.io/jam/game-off-2026](https://itch.io/jam/game-off-2
 | 📱 아이폰 | 화면을 **탭** |
 | ⌨️ 데스크톱 | **스페이스** / **Shift** / **위 방향키** |
 | 별 🌟 | 먹으면 **+5점** |
+| 🌐 언어 | 왼쪽 위 **🌐** 버튼으로 한국어 ↔ English (고른 언어는 저장돼요) |
 | 화면을 벗어나면 | 자동으로 **일시정지** |
 
 장애물(빨간 가시·공중 바)에 닿으면 게임 오버. 바닥과 천장에 붙어
@@ -80,6 +81,14 @@ CRC를 스스로 다시 검사해서, 문제가 있으면 알려줘요.
 
 ## 📜 버전 기록
 
+**v1.3 (2026-11-23) — 한국어 / English 언어 전환**
+- 왼쪽 위 **🌐** 버튼으로 한국어 ↔ English (게임 중에는 화면을 가리지 않게 숨김)
+- 시작·일시정지·게임 오버 화면, 조작 안내, 최고 기록 표시, 브라우저 탭 제목,
+  화면 읽기(aria-label)까지 전부 두 언어로 바뀝니다
+- 고른 언어는 `localStorage`(`gravity-shift-lang`)에 저장되고, 처음 방문하면
+  브라우저 언어를 따라가요 (한국어 브라우저 → 한국어, 그 밖 → English)
+- 문구는 `js/game.js`의 `I18N` 표 하나에 모여 있어, 언어를 더 넣기도 쉬워요
+
 **v1.2 (2026-11-05) — 효과음 추가**
 - Web Audio로 직접 만든 저작권 걱정 없는 효과음 4종:
   중력 반전(위로 뒤집으면 올라가고 아래로는 내려가는 스윕), 별 획득(딩-딩↑
@@ -115,7 +124,8 @@ Game Off 2026은 **게임 코드가 공개된 GitHub 저장소**와 **itch.io �
   → <https://github.com/cavinty1216/gravity-shift>
   → 브라우저에서 바로 플레이:
     <https://cavinty1216.github.io/gravity-shift/> · <https://gravity-shift-psi.vercel.app/>
-- [ ] itch.io 행사 참가 등록 (아직 안 함)
-- [ ] itch.io에 게임 업로드 (아직 안 함)
+- [x] itch.io 행사 참가 등록 → <https://itch.io/jam/game-off-2026>
+- [x] itch.io에 게임 업로드 → <https://cavinty1216.itch.io/gravity-shift>
+  (HTML5, 브라우저에서 실행, 960×540, 무료)
 
 행사 일정은 <https://itch.io/jam/game-off-2026>에서 확인하세요.
