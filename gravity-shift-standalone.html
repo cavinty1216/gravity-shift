@@ -102,6 +102,7 @@ body {
 /* 게임 중에는 화면을 가리지 않게 숨겨요 (탭이 언어 전환으로 새는 것도 방지) */
 #btn-lang.is-hidden {
   opacity: 0;
+  visibility: hidden;                    /* 화면 읽기 목록에서도 빠져요 */
   pointer-events: none;
 }
 
