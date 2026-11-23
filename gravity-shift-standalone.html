@@ -563,7 +563,9 @@ h2 {
     screens.over.classList.toggle('hidden', name !== 'over');
     screens.pause.classList.toggle('hidden', name !== 'pause');
     // 게임 중에는 언어 버튼을 숨겨요 (화면을 가리지 않고, 탭이 새지 않게)
-    if (btnLang) btnLang.classList.toggle('is-hidden', name === 'playing');
+    // 게임 중에는 보여 줄 화면이 없어서 name이 null로 들어와요
+    var overlay = (name === 'title' || name === 'over' || name === 'pause');
+    if (btnLang) btnLang.classList.toggle('is-hidden', !overlay);
   }
 
   function refreshTitle() {
